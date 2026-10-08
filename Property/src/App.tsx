@@ -1,3 +1,4 @@
+import './App.css';
 import AssetRequisition from './components/AssetRequisitions/AssetRequisition';
 
 function App() {

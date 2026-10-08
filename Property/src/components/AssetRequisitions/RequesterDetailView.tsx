@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { Requisition, RepairRecord, CleaningRecord } from '../AssetRequisitions/types';
+import type { Requisition, RepairRecord, CleaningRecord } from './types';
+import { requisitionStatus, repairStatus } from './status';
 
 interface RequesterDetailViewProps {
   requesterName: string;
@@ -36,32 +37,11 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
   const totalRepairs = userRepairs.length;
   const totalCleanings = userCleanings.length;
 
-  const getStatusBadgeClass = (status: Requisition['status']) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'completed':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'rejected':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-    }
-  };
-
-  const getRepairBadgeClass = (status: RepairRecord['status']) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'in_progress':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'pending':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-    }
-  };
+  const getStatusBadgeClass = (status: Requisition['status']) => requisitionStatus[status].badge;
+  const getRepairBadgeClass = (status: RepairRecord['status']) => repairStatus[status].badge;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* 1. ปุ่มย้อนกลับและ Breadcrumb */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
@@ -80,11 +60,12 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
       </div>
 
       {/* 2. การ์ดโปรไฟล์ผู้ขอเบิกและสถิติกิจกรรม */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 animate-fade-up" style={{ animationDelay: '80ms' }}>
+        <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-linear-to-br from-blue-500/15 to-violet-500/10 blur-2xl animate-float" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* ข้อมูลโปรไฟล์ส่วนตัว */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-xl flex items-center justify-center shadow-md shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-600 via-indigo-600 to-violet-600 bg-[length:200%_200%] animate-gradient-pan text-white font-bold text-xl flex items-center justify-center shadow-md shrink-0">
               {avatar}
             </div>
             <div>
@@ -108,7 +89,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
             {/* สถิติ 1: รายการเบิก */}
             <button
               onClick={() => setActiveTab('requisitions')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${activeTab === 'requisitions'
+              className={`p-3 rounded-xl border text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${activeTab === 'requisitions'
                 ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20'
                 : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -125,7 +106,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
             {/* สถิติ 2: แจ้งซ่อม */}
             <button
               onClick={() => setActiveTab('repairs')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${activeTab === 'repairs'
+              className={`p-3 rounded-xl border text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${activeTab === 'repairs'
                 ? 'bg-amber-50/70 border-amber-300 ring-2 ring-amber-500/20'
                 : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -142,7 +123,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
             {/* สถิติ 3: ทำความสะอาด */}
             <button
               onClick={() => setActiveTab('cleanings')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${activeTab === 'cleanings'
+              className={`p-3 rounded-xl border text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${activeTab === 'cleanings'
                 ? 'bg-emerald-50/70 border-emerald-300 ring-2 ring-emerald-500/20'
                 : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -196,7 +177,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
 
       {/* TAB 1: ประวัติการเบิกทรัพย์สิน */}
       {activeTab === 'requisitions' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fade-up">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
               <h3 className="text-sm font-bold text-slate-800">รายการทรัพย์สินที่ {requesterName} ได้เบิกใช้งาน</h3>
@@ -230,7 +211,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
                   </tr>
                 ) : (
                   userRequisitions.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition">
+                    <tr key={item.id} className="hover:bg-slate-50 transition-colors animate-fade-up">
                       <td className="py-3.5 px-4 font-bold text-blue-700 font-mono">{item.id}</td>
                       <td className="py-3.5 px-4">
                         <div className="font-medium text-slate-900">{item.asset}</div>
@@ -274,7 +255,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
 
       {/* TAB 2: ประวัติการแจ้งซ่อม */}
       {activeTab === 'repairs' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fade-up">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
               <h3 className="text-sm font-bold text-slate-800">ประวัติการแจ้งซ่อมและแจ้งปัญหาอุปกรณ์</h3>
@@ -307,7 +288,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
                   </tr>
                 ) : (
                   userRepairs.map((repair) => (
-                    <tr key={repair.id} className="hover:bg-slate-50 transition">
+                    <tr key={repair.id} className="hover:bg-slate-50 transition-colors animate-fade-up">
                       <td className="py-3.5 px-4 font-mono font-bold text-amber-600">{repair.id}</td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800">{repair.asset}</div>
@@ -339,7 +320,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
 
       {/* TAB 3: ประวัติการทำความสะอาด */}
       {activeTab === 'cleanings' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fade-up">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
               <h3 className="text-sm font-bold text-slate-800">ประวัติการทำความสะอาด & บำรุงรักษาอุปกรณ์</h3>
@@ -376,7 +357,7 @@ export const RequesterDetailView: React.FC<RequesterDetailViewProps> = ({
                   </tr>
                 ) : (
                   userCleanings.map((clean, index) => (
-                    <tr key={clean.id} className="hover:bg-slate-50 transition">
+                    <tr key={clean.id} className="hover:bg-slate-50 transition-colors animate-fade-up">
                       <td className="py-3.5 px-4 font-mono font-bold text-emerald-600">
                         {clean.id}
                         <span className="ml-1 text-[10px] text-slate-400 font-normal">

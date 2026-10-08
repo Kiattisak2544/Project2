@@ -1,14 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f5f5f5;
+/*
+  สไตล์ระดับแอป
+  - ไม่ต้อง reset margin/padding/box-sizing เอง เพราะ Tailwind (preflight) ทำให้แล้ว
+  - ใส่ไว้ใน @layer base เพื่อไม่ให้ไปทับ utility class เช่น p-4, mt-1
+*/
+@layer base {
+  body {
+    background-color: #f5f5f5;
+  }
 }

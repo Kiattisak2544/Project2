@@ -51,7 +51,7 @@ export interface CleaningRecord {
 }
 
 // Helper array of companies for mock data assignment
-const companies = ['ตึกน้ำเงิน', 'ตึกน้ำเงินสติล', 'ฮาร์ดแวร์ฌฮาส์', 'ตึกน้ำเงินรีเทล'];
+export const companies = ['ตึกน้ำเงิน', 'ตึกน้ำเงินสติล', 'ฮาร์ดแวร์ฌฮาส์', 'ตึกน้ำเงินรีเทล'];
 
 export const mockData: Requisition[] = [
   {
