@@ -2,7 +2,7 @@ import AssetRequisition from './components/AssetRequisitions/AssetRequisition';
 
 function App() {
   return (
-    <div className="app-container">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
       <AssetRequisition />
     </div>
   );

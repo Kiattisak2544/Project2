@@ -1,101 +1,135 @@
 import React from 'react';
+import { currentUser } from '../../constants/currentUser';
+import { menuItems, type PageId } from './navigation';
 
 interface SidebarProps {
   isMenuOpen: boolean;
   isCollapsed: boolean;
+  activePage: PageId;
+  pendingCount: number;
+  onNavigate: (page: PageId) => void;
   onCloseMenu: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isMenuOpen,
   isCollapsed,
+  activePage,
+  pendingCount,
+  onNavigate,
   onCloseMenu,
 }) => {
   return (
     <>
-      {/* ม่านดำพื้นหลัง เมื่อเปิดเมนูบนมือถือ */}
+      {/* Mobile backdrop */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-inverse-surface/60 backdrop-blur-xs z-30 lg:hidden animate-fade-in"
           onClick={onCloseMenu}
         />
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 h-screen bg-white border-r border-slate-200 flex flex-col z-40 transition-all duration-300 ${
+        className={`fixed lg:sticky top-0 h-screen flex flex-col z-40 overflow-hidden text-on-surface-variant
+          bg-surface-container-low border-r border-outline-variant/40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]
+          transition-[width,translate] duration-500 ease-out-expo ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } ${isCollapsed ? 'lg:w-20' : 'w-64'}`}
+        } ${isCollapsed ? 'lg:w-20 w-64' : 'w-64'}`}
       >
-        {/* หัวข้อโลโก้ */}
-        <div className="p-4 flex items-center justify-between border-b border-slate-100">
+        {/* Header / Brand */}
+        <div className="h-16 px-4 flex items-center justify-between bg-surface-container border-b border-outline-variant/40 shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-lg bg-blue-700 text-white font-bold flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-primary-container text-on-primary font-bold flex items-center justify-center shrink-0 shadow-sm">
               EA
             </div>
             {!isCollapsed && (
-              <div>
-                <h2 className="text-sm font-bold text-slate-900 leading-tight">Asset Core</h2>
-                <span className="text-xs text-slate-400">ระบบจัดการทรัพย์สิน</span>
+              <div className="animate-fade-in whitespace-nowrap">
+                <h2 className="text-sm font-bold text-primary leading-tight tracking-wide">Asset Core</h2>
+                <span className="text-[11px] text-on-surface-variant font-mono leading-tight">การจัดการสินทรัพย์</span>
               </div>
             )}
           </div>
 
-          {/* ปุ่มกากบาทปิดเมนู (แสดงเฉพาะบนมือถือ) */}
+          {/* Close button for mobile */}
           <button
-            className="lg:hidden p-1 text-slate-400 hover:text-slate-600"
+            className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition cursor-pointer"
             onClick={onCloseMenu}
+            aria-label="ปิดเมนู"
           >
             ✕
           </button>
         </div>
 
-        {/* รายการปุ่มเมนู */}
+        {/* Menu Navigation */}
         <nav className="p-3 flex-1 flex flex-col gap-1 overflow-y-auto text-xs font-medium">
-          <div className="text-[11px] font-bold text-slate-400 uppercase px-2 py-1">
+          <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-3 py-2 h-8">
             {!isCollapsed && 'เมนูหลัก'}
           </div>
 
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 w-full text-left">
-            <span>📊</span>
-            {!isCollapsed && <span>แดชบอร์ดภาพรวม</span>}
-          </button>
-
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 w-full text-left">
-            <span>📦</span>
-            {!isCollapsed && <span>ทะเบียนทรัพย์สิน</span>}
-          </button>
-
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 font-semibold w-full text-left">
-            <span>📝</span>
-            {!isCollapsed && (
-              <>
-                <span>รายการเบิกทรัพย์สิน</span>
-                <span className="ml-auto bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full">2</span>
-              </>
-            )}
-          </button>
-
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 w-full text-left">
-            <span>🔄</span>
-            {!isCollapsed && <span>ประวัติการโอนย้าย</span>}
-          </button>
-
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 w-full text-left">
-            <span>🔧</span>
-            {!isCollapsed && <span>ซ่อมบำรุง / ตรวจนับ</span>}
-          </button>
+          {menuItems.map((item, i) => {
+            const active = item.id === activePage;
+            const badge = item.id === 'requisitions' && pendingCount > 0 ? pendingCount : null;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                title={isCollapsed ? item.label : undefined}
+                onClick={() => onNavigate(item.id)}
+                style={{ animationDelay: `${80 + i * 60}ms` }}
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left cursor-pointer transition-all duration-200 animate-fade-up ${
+                  active
+                    ? 'bg-primary-container text-on-primary font-semibold shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`}
+              >
+                <span className={`text-base transition-transform duration-200 ${active ? 'scale-105' : 'group-hover:scale-105'}`}>
+                  {item.icon}
+                </span>
+                {!isCollapsed && <span className="whitespace-nowrap font-medium">{item.label}</span>}
+                {badge !== null &&
+                  (isCollapsed ? (
+                    <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-error" />
+                  ) : (
+                    <span
+                      className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center ${
+                        active ? 'bg-white/20 text-on-primary' : 'bg-error text-on-error'
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  ))}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* ข้อมูลผู้ใช้งานด้านล่าง */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-xs shrink-0">
-              นก
+        {/* Footer: Server Status & Current User */}
+        <div className="p-3 border-t border-outline-variant/40 flex flex-col gap-2 shrink-0">
+          {!isCollapsed && (
+            <div className="bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant/30 shadow-[0_1px_4px_rgba(0,0,0,0.03)] flex flex-col gap-1 text-[11px]">
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant font-medium">สถานะเซิร์ฟเวอร์</span>
+                <span className="inline-flex items-center gap-1 text-tertiary-container font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim inline-block animate-pulse" />
+                  ออนไลน์
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant font-medium">สาขา</span>
+                <span className="font-mono text-primary font-semibold">สำนักงานใหญ่</span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2.5 p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/30">
+            <div className="relative w-8 h-8 rounded-full bg-primary-fixed text-primary font-bold flex items-center justify-center text-xs shrink-0">
+              {currentUser.avatar}
+              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-tertiary-fixed-dim ring-2 ring-surface-container-lowest" />
             </div>
             {!isCollapsed && (
-              <div className="truncate text-xs">
-                <div className="font-semibold text-slate-800">นรินทร์ เกียรติสกุล</div>
-                <div className="text-[10px] text-slate-400">Admin ผู้ดูแลระบบ</div>
+              <div className="truncate text-xs animate-fade-in">
+                <div className="font-semibold text-on-surface truncate">{currentUser.name}</div>
+                <div className="text-[10px] text-on-surface-variant truncate">{currentUser.role}</div>
               </div>
             )}
           </div>

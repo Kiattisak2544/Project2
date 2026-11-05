@@ -1,5 +1,8 @@
-import React from 'react';
-import type { Requisition } from '../AssetRequisitions/types';
+import React, { useState } from 'react';
+import type { Requisition } from './types';
+import { requisitionStatus } from './status';
+
+const PAGE_SIZE = 5;
 
 interface RequisitionTableProps {
   items: Requisition[];
@@ -14,92 +17,100 @@ export const RequisitionTable: React.FC<RequisitionTableProps> = ({
   onSelect,
   onSelectRequester,
 }) => {
-  // ฟังก์ชันเลือกสีป้ายสถานะ
-  const getStatusBadgeClass = (status: Requisition['status']) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'completed':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'rejected':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-    }
-  };
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const current = Math.min(page, totalPages);
+  const pageItems = items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const firstIndex = items.length === 0 ? 0 : (current - 1) * PAGE_SIZE + 1;
+
+  const pageBtn =
+    'min-w-8 h-8 px-2 rounded-lg border text-xs font-medium transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div
+      className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-sm overflow-hidden animate-fade-up"
+      style={{ animationDelay: '500ms' }}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse min-w-[700px]">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
+            <tr className="bg-surface-container text-on-surface-variant font-semibold tracking-wider uppercase border-b border-outline-variant/40">
               <th className="py-3 px-4">รหัสคำขอ</th>
               <th className="py-3 px-4">ผู้ขอเบิก</th>
               <th className="py-3 px-4">บริษัท</th>
-              <th className="py-3 px-4">รายการทรัพย์สิน</th>
-              <th className="py-3 px-4">รหัสแท็ก</th>
-              <th className="py-3 px-4">วันที่ขอ</th>
+              <th className="py-3 px-4">รายละเอียดสินทรัพย์</th>
+              <th className="py-3 px-4">หมายเลขสินทรัพย์</th>
+              <th className="py-3 px-4">วันที่ขอเบิก</th>
               <th className="py-3 px-4">สถานะ</th>
-              <th className="py-3 px-4 text-center">จัดการ</th>
+              <th className="py-3 px-4 text-center">การดำเนินการ</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {items.length === 0 ? (
+          <tbody key={current} className="divide-y-0 text-on-surface">
+            {pageItems.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-slate-400">
-                  ไม่พบข้อมูลที่ตรงกับเงื่อนไขค้นหา
+                <td colSpan={8} className="text-center py-14 text-outline animate-fade-in">
+                  <div className="text-3xl mb-2">🔎</div>
+                  ไม่พบข้อมูลที่ตรงกับการค้นหาของคุณ
                 </td>
               </tr>
             ) : (
-              items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="py-3.5 px-4 font-bold text-blue-700 font-mono">{item.id}</td>
+              pageItems.map((item, i) => (
+                <tr
+                  key={item.id}
+                  style={{ animationDelay: `${i * 50}ms` }}
+                  className={`group/row animate-fade-up transition-colors duration-150 hover:bg-surface-container/40 ${
+                    i % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface-container-low/50'
+                  }`}
+                >
+                  <td className="py-3.5 px-4 font-bold text-primary font-mono relative">
+                    <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-primary scale-y-0 transition-transform duration-200 group-hover/row:scale-y-100" />
+                    {item.id}
+                  </td>
                   <td className="py-3.5 px-4">
                     {onSelectRequester ? (
                       <button
                         type="button"
                         onClick={() => onSelectRequester(item.name)}
                         className="text-left group cursor-pointer"
-                        title="คลิกเพื่อดูประวัติการเบิก แจ้งซ่อม และทำความสะอาด"
+                        title="ดูประวัติการเบิกและบริการของพนักงาน"
                       >
-                        <div className="font-semibold text-slate-800 group-hover:text-blue-700 group-hover:underline flex items-center gap-1.5 transition">
+                        <div className="font-semibold text-on-surface group-hover:text-secondary flex items-center gap-1.5 transition">
                           <span>{item.name}</span>
-                          <span className="text-[10px] text-blue-600 opacity-0 group-hover:opacity-100 transition">
+                          <span className="text-[10px] text-secondary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition">
                             ↗
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-400">{item.dept}</div>
+                        <div className="text-[11px] text-on-surface-variant">{item.dept}</div>
                       </button>
                     ) : (
                       <div>
-                        <div className="font-semibold text-slate-800">{item.name}</div>
-                        <div className="text-[11px] text-slate-400">{item.dept}</div>
+                        <div className="font-semibold text-on-surface">{item.name}</div>
+                        <div className="text-[11px] text-on-surface-variant">{item.dept}</div>
                       </div>
                     )}
                   </td>
-                  <td className="py-3.5 px-4">{item.company}</td>
+                  <td className="py-3.5 px-4 text-on-surface-variant">{item.company}</td>
                   <td className="py-3.5 px-4">
-                    <div className="font-medium text-slate-900">{item.asset}</div>
-                    <div className="text-[11px] text-slate-400">{item.category}</div>
+                    <div className="font-semibold text-primary">{item.asset}</div>
+                    <div className="text-[11px] text-on-surface-variant">{item.category}</div>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-slate-500">{item.tag}</td>
-                  <td className="py-3.5 px-4 text-slate-600">{item.date}</td>
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 px-4 font-mono text-outline text-label-sm">{item.tag}</td>
+                  <td className="py-3.5 px-4 text-on-surface-variant whitespace-nowrap">{item.date}</td>
+                  <td className="py-3.5 px-4 whitespace-nowrap">
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${getStatusBadgeClass(
-                        item.status
-                      )}`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${requisitionStatus[item.status].badge}`}
                     >
-                      {item.statusText}
+                      <span className={`w-1.5 h-1.5 rounded-full ${requisitionStatus[item.status].dot}`} />
+                      {requisitionStatus[item.status].text}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-center">
                     <button
                       onClick={() => onSelect(item)}
-                      className="px-2.5 py-1 border border-slate-200 rounded text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition text-xs font-medium cursor-pointer"
+                      className="px-3 py-1 border border-outline-variant/50 rounded-lg text-secondary hover:bg-surface-container hover:text-primary transition-colors text-xs font-medium cursor-pointer shadow-2xs"
                     >
-                      ดูข้อมูล
+                      ดูรายละเอียด
                     </button>
                   </td>
                 </tr>
@@ -109,10 +120,46 @@ export const RequisitionTable: React.FC<RequisitionTableProps> = ({
         </table>
       </div>
 
-      {/* แถบแสดงจำนวนรายการด้านล่าง */}
-      <div className="p-3 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
-        <span>แสดง {items.length} จากทั้งหมด {totalCount} รายการ</span>
-        <span>หน้า 1 จาก 1</span>
+      {/* Pagination Footer */}
+      <div className="p-3 border-t border-outline-variant/30 text-xs text-on-surface-variant flex flex-wrap gap-2 justify-between items-center bg-surface-container-low/40">
+        <span>
+          แสดง {firstIndex}–{firstIndex + pageItems.length - (pageItems.length ? 1 : 0)} จากทั้งหมด {items.length} รายการ
+          {items.length !== totalCount && <span className="text-outline"> (ทั้งหมด {totalCount})</span>}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setPage(current - 1)}
+            disabled={current === 1}
+            className={`${pageBtn} border-outline-variant/40 bg-surface-container-lowest text-on-surface enabled:hover:bg-surface-container`}
+            aria-label="หน้าก่อนหน้า"
+          >
+            ‹
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setPage(n)}
+              className={`${pageBtn} ${
+                n === current
+                  ? 'bg-primary text-on-primary border-transparent shadow-sm font-semibold'
+                  : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface hover:bg-surface-container'
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setPage(current + 1)}
+            disabled={current === totalPages}
+            className={`${pageBtn} border-outline-variant/40 bg-surface-container-lowest text-on-surface enabled:hover:bg-surface-container`}
+            aria-label="หน้าถัดไป"
+          >
+            ›
+          </button>
+        </div>
       </div>
     </div>
   );

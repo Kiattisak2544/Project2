@@ -1,9 +1,8 @@
 // =============================================
-// Current User Session (Simulated)
+// ข้อมูลผู้ใช้ปัจจุบัน (จำลอง)
 // =============================================
-// This file centralizes the currently logged-in user's info.
-// It mirrors the hardcoded values in Navbar.tsx and Sidebar.tsx.
-// Replace this with real auth/session logic when available.
+// ไฟล์นี้รวมศูนย์ข้อมูลของผู้ใช้ที่เข้าสู่ระบบในปัจจุบัน
+// ใช้โดย Navbar, Sidebar และ Modal โปรไฟล์
 
 export interface CurrentUser {
   name: string;
@@ -15,10 +14,10 @@ export interface CurrentUser {
 }
 
 export const currentUser: CurrentUser = {
-  name: 'admin',
-  role: 'Admin',
-  dept: 'ฝ่ายไอที (IT)',
-  company: 'ตึกน้ำเงิน',
-  avatar: 'am',
-  email: 'narin.k@enterprise.co.th',
+  name: 'สมเกียรติ มั่นคง',
+  role: 'ผู้ดูแลระบบสินทรัพย์ (Admin)',
+  dept: 'แผนกไอที',
+  company: 'บลู ทาวเวอร์',
+  avatar: 'สม',
+  email: 'somkiat.m@enterprise.co.th',
 };

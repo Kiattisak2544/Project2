@@ -1,88 +1,115 @@
 import React from 'react';
-import type { Requisition } from '../AssetRequisitions/types';
+import type { Requisition } from './types';
+import { requisitionStatus } from './status';
+import Modal from '../ui/Modal';
 
 interface DetailModalProps {
   item: Requisition;
   onClose: () => void;
+  onUpdateStatus: (id: string, status: Requisition['status']) => void;
 }
 
-export const DetailModal: React.FC<DetailModalProps> = ({ item, onClose }) => {
+export const DetailModal: React.FC<DetailModalProps> = ({ item, onClose, onUpdateStatus }) => {
+  const rows: [string, React.ReactNode][] = [
+    ['ผู้ขอเบิก', `${item.name} (${item.dept})`],
+    ['ตำแหน่ง', item.role],
+    ['บริษัท', item.company],
+    ['รายการสินทรัพย์', item.asset],
+    ['หมวดหมู่', item.category],
+    ['รหัสสินทรัพย์', <span className="font-mono text-primary font-semibold">{item.tag}</span>],
+    ['ประเภทการเบิก', `${item.type} (กำหนดคืน: ${item.dueDate})`],
+    ['วันที่ขอเบิก', item.date],
+  ];
+
   return (
-    <div
-      className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-slate-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ส่วนหัว Modal */}
-        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-          <div>
-            <span className="text-xs font-mono font-bold text-blue-700">{item.id}</span>
-            <h3 className="text-base font-bold text-slate-800">รายละเอียดคำขอเบิก</h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-lg p-1"
-          >
-            ✕
-          </button>
-        </div>
+    <Modal onClose={onClose}>
+      {(close) => {
+        const update = (status: Requisition['status']) => () => {
+          onUpdateStatus(item.id, status);
+          close();
+        };
 
-        {/* ข้อมูลรายละเอียด */}
-        <div className="py-4 space-y-3 text-xs">
-          <div className="flex justify-between">
-            <span className="text-slate-400">ผู้ขอเบิก:</span>
-            <span className="font-semibold text-slate-800">
-              {item.name} ({item.dept})
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">รายการทรัพย์สิน:</span>
-            <span className="font-semibold text-slate-800">{item.asset}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">รหัสแท็ก:</span>
-            <span className="font-mono text-blue-700">{item.tag}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">ประเภท:</span>
-            <span className="text-slate-700">
-              {item.type} (กำหนดคืน: {item.dueDate})
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">สถานะ:</span>
-            <span className="font-semibold">{item.statusText}</span>
-          </div>
-          {item.notes && (
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600">
-              <span className="font-bold text-slate-500">หมายเหตุ:</span> {item.notes}
+        return (
+          <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-xl border border-outline-variant/30 text-on-surface">
+            {/* Header */}
+            <div className="relative px-6 pt-5 pb-4 bg-primary-container text-on-primary">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-[11px] font-mono font-bold text-on-primary-container">{item.id}</span>
+                  <h3 className="text-base font-bold">รายละเอียดคำขอเบิก</h3>
+                </div>
+                <button
+                  onClick={close}
+                  className="w-8 h-8 rounded-full text-on-primary/80 hover:text-on-primary hover:bg-white/15 transition cursor-pointer flex items-center justify-center"
+                  aria-label="ปิด"
+                >
+                  ✕
+                </button>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1.5 mt-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${requisitionStatus[item.status].badge}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${requisitionStatus[item.status].dot}`} />
+                {requisitionStatus[item.status].text}
+              </span>
             </div>
-          )}
-        </div>
 
-        {/* ปุ่มด้านล่าง Modal */}
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition"
-          >
-            ปิด
-          </button>
-          <button
-            onClick={() => {
-              alert('บันทึกการอนุมัติเรียบร้อย');
-              onClose();
-            }}
-            className="px-4 py-1.5 text-xs bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold transition"
-          >
-            ยืนยันคำขอ
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* Content Rows */}
+            <div className="px-6 py-4 space-y-2.5 text-xs bg-surface-container-lowest">
+              {rows.map(([label, value], i) => (
+                <div
+                  key={label}
+                  className="flex justify-between gap-4 animate-fade-up"
+                  style={{ animationDelay: `${120 + i * 40}ms` }}
+                >
+                  <span className="text-on-surface-variant shrink-0">{label}:</span>
+                  <span className="font-semibold text-on-surface text-right">{value}</span>
+                </div>
+              ))}
+              {item.notes && (
+                <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/30 text-on-surface animate-fade-up" style={{ animationDelay: '460ms' }}>
+                  <span className="font-bold text-on-surface-variant">หมายเหตุ:</span> {item.notes}
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap justify-end gap-2 px-6 py-3.5 border-t border-outline-variant/30 bg-surface-container-low/40">
+              <button
+                onClick={close}
+                className="px-4 py-2 text-xs bg-surface-container hover:bg-surface-container-high rounded-lg text-on-surface-variant hover:text-on-surface transition font-medium cursor-pointer"
+              >
+                ปิด
+              </button>
+              {item.status === 'pending' && (
+                <>
+                  <button
+                    onClick={update('rejected')}
+                    className="px-4 py-2 text-xs border border-error/40 text-error bg-surface-container-lowest hover:bg-error-container/40 rounded-lg font-semibold transition cursor-pointer"
+                  >
+                    ปฏิเสธคำขอ
+                  </button>
+                  <button
+                    onClick={update('approved')}
+                    className="px-4 py-2 text-xs bg-primary text-on-primary hover:bg-primary-container rounded-lg font-semibold shadow-sm transition cursor-pointer"
+                  >
+                    ✓ อนุมัติคำขอ
+                  </button>
+                </>
+              )}
+              {item.status === 'approved' && (
+                <button
+                  onClick={update('completed')}
+                  className="px-4 py-2 text-xs bg-primary text-on-primary hover:bg-primary-container rounded-lg font-semibold shadow-sm transition cursor-pointer"
+                >
+                  🚚 ยืนยันการส่งมอบ
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }}
+    </Modal>
   );
 };
 
